@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { Public } from '../decorators/public.decorator';
+
 import { LinksService } from './links.service';
 
-import { CreateLinkDto } from '@repo/api/links/dto/create-link.dto';
-import { UpdateLinkDto } from '@repo/api/links/dto/update-link.dto';
+import { CreateLinkDto } from './dto/create-link.dto';
+import { UpdateLinkDto } from './dto/update-link.dto';
 
 @Controller('links')
 export class LinksController {
@@ -21,6 +23,7 @@ export class LinksController {
     return this.linksService.create(createLinkDto);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.linksService.findAll();
