@@ -1,8 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
+  "globalDependencies": ["**/.env.*local", "AWS_BUCKET_NAME"],
   "tasks": {
     "dev": {
       "cache": false,
@@ -10,12 +8,19 @@
     },
     "build": {
       "dependsOn": [
-        "^build"
+        "^build",
+        "AWS_REGION",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_BUCKET_NAME"
       ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**"
-      ]
+      "env": [
+        "AWS_REGION",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_BUCKET_NAME"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {},
     "test": {},
