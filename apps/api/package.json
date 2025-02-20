@@ -15,7 +15,9 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.751.0",
     "@aws-sdk/client-s3": "^3.749.0",
+    "@aws-sdk/lib-dynamodb": "^3.751.0",
     "@aws-sdk/s3-request-presigner": "^3.749.0",
     "@clerk/backend": "^1.24.1",
     "@nestjs/common": "^10.0.0",
