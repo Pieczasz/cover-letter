@@ -1,7 +1,7 @@
-// apps/api/src/upload/upload.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { UploadService } from './upload.service';
+import { FileValidator } from './validators/file.validator';
 
 jest.mock('@aws-sdk/client-s3', () => ({
   S3Client: jest.fn().mockImplementation(() => ({
@@ -11,21 +11,14 @@ jest.mock('@aws-sdk/client-s3', () => ({
 }));
 
 describe('UploadService', () => {
-  it('should handle file upload', async () => {
-    const file = {
-      buffer: Buffer.from('test'),
-      originalname: 'test.pdf',
-      mimetype: 'application/pdf',
-    } as Express.Multer.File;
-    const result = await service.uploadFile(file);
-    expect(result).toHaveProperty('url');
-  });
   let service: UploadService;
+  let fileValidator: FileValidator;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UploadService,
+        FileValidator,
         {
           provide: ConfigService,
           useValue: {
@@ -44,20 +37,48 @@ describe('UploadService', () => {
     }).compile();
 
     service = module.get<UploadService>(UploadService);
+    fileValidator = module.get<FileValidator>(FileValidator);
   });
 
   describe('uploadFile', () => {
-    it('should upload a file successfully', async () => {
+    it('should upload a valid file successfully', async () => {
       const mockFile = {
         buffer: Buffer.from('test'),
         originalname: 'test.pdf',
         mimetype: 'application/pdf',
+        size: 1024 * 1024, // 1MB
       } as Express.Multer.File;
 
       const result = await service.uploadFile(mockFile);
 
       expect(result).toHaveProperty('key');
       expect(result).toHaveProperty('url');
+    });
+
+    it('should throw error for invalid file type', async () => {
+      const mockFile = {
+        buffer: Buffer.from('test'),
+        originalname: 'test.jpg',
+        mimetype: 'image/jpeg',
+        size: 1024 * 1024,
+      } as Express.Multer.File;
+
+      await expect(service.uploadFile(mockFile)).rejects.toThrow(
+        'Invalid file type',
+      );
+    });
+
+    it('should throw error for file too large', async () => {
+      const mockFile = {
+        buffer: Buffer.from('test'),
+        originalname: 'test.pdf',
+        mimetype: 'application/pdf',
+        size: 3 * 1024 * 1024, // 3MB
+      } as Express.Multer.File;
+
+      await expect(service.uploadFile(mockFile)).rejects.toThrow(
+        'File size too large',
+      );
     });
   });
 });

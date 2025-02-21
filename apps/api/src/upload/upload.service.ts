@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { FileValidator } from './validators/file.validator';
 
 @Injectable()
 export class UploadService {
   private s3Client: S3Client;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private fileValidator: FileValidator,
+  ) {
     this.s3Client = new S3Client({
       region: this.configService.get<string>('AWS_REGION'),
       credentials: {
@@ -19,6 +23,8 @@ export class UploadService {
   }
 
   async uploadFile(file: Express.Multer.File) {
+    this.fileValidator.validateFile(file);
+
     const bucketName = this.configService.get<string>('AWS_BUCKET_NAME');
     const key = `cvs/${Date.now()}-${file.originalname}`;
 
