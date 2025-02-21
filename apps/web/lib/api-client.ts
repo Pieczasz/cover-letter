@@ -1,9 +1,12 @@
-export async function uploadCV(file: File, onProgress?: (progress: number) => void) {
+export async function uploadCV(
+  file: File,
+  onProgress?: (progress: number) => void,
+) {
   const formData = new FormData();
   formData.append('file', file);
 
   const xhr = new XMLHttpRequest();
-  
+
   return new Promise((resolve, reject) => {
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable && onProgress) {

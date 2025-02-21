@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  DynamoDBClient,
-  PutItemCommand,
-  QueryCommand,
-} from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
 @Injectable()
-export class CoverLetterService {
+export class UserService {
   private client: DynamoDBClient;
   private tableName: string;
 
@@ -22,31 +18,16 @@ export class CoverLetterService {
     this.tableName = this.configService.get('DYNAMODB_TABLE_USERS');
   }
 
-  async saveCoverLetter(
-    userId: string,
-    coverId: string,
-    s3Key: string,
-  ): Promise<any> {
+  async createUser(userId: string, name: string, email: string): Promise<any> {
     const params = {
       TableName: this.tableName,
       Item: {
         userId: { S: userId },
-        coverId: { S: coverId },
-        s3Key: { S: s3Key },
+        name: { S: name },
+        email: { S: email },
       },
     };
-    return this.client.send(new PutItemCommand(params));
-  }
-
-  async getUserCoverLetters(userId: string): Promise<any> {
-    const params = {
-      TableName: this.tableName,
-      KeyConditionExpression: 'userId = :uid',
-      ExpressionAttributeValues: {
-        ':uid': { S: userId },
-      },
-    };
-    const result = await this.client.send(new QueryCommand(params));
-    return result.Items;
+    await this.client.send(new PutItemCommand(params));
+    return { userId, name, email };
   }
 }
