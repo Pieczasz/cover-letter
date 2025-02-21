@@ -3,6 +3,8 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipeBuilder,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
@@ -13,7 +15,21 @@ export class UploadController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(pdf|doc|docx)$/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 2000000, // 2MB
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+  ) {
     return this.uploadService.uploadFile(file);
   }
 }

@@ -1,14 +1,16 @@
+// src/database/dynamodb.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
-import { CoverLetterService } from './cover-letter.service';
 import { ConfigService } from '@nestjs/config';
+import { DynamoDBService } from './dynamodb.service';
+import { CreateTableCommandOutput } from '@aws-sdk/client-dynamodb';
 
-describe('CoverLetterService', () => {
-  let service: CoverLetterService;
+describe('DynamoDBService', () => {
+  let service: DynamoDBService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CoverLetterService,
+        DynamoDBService,
         {
           provide: ConfigService,
           useValue: {
@@ -20,8 +22,6 @@ describe('CoverLetterService', () => {
                   return 'mock-key';
                 case 'AWS_SECRET_ACCESS_KEY':
                   return 'mock-secret';
-                case 'DYNAMODB_TABLE_COVER_LETTERS':
-                  return 'mock-table';
                 default:
                   return null;
               }
@@ -31,10 +31,29 @@ describe('CoverLetterService', () => {
       ],
     }).compile();
 
-    service = module.get<CoverLetterService>(CoverLetterService);
+    service = module.get<DynamoDBService>(DynamoDBService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  /*
+  it('should create tables', async () => {
+    const mockResponse: CreateTableCommandOutput = {
+      $metadata: {},
+      TableDescription: {
+        TableName: 'test-table',
+        TableStatus: 'ACTIVE',
+      },
+    };
+
+    const createTableSpy = jest
+      .spyOn(service['client'], 'send')
+      .mockResolvedValue(mockResponse);
+
+    await service.createTables();
+    expect(createTableSpy).toHaveBeenCalled();
+  });
+  */
 });

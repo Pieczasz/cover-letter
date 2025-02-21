@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CoverLetterService } from './cover-letter.service';
 import { ConfigService } from '@nestjs/config';
+import { CoverLetterRepository } from './cover-letter.repository';
 
-describe('CoverLetterService', () => {
-  let service: CoverLetterService;
+describe('CoverLetterRepository', () => {
+  let repository: CoverLetterRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CoverLetterService,
+        CoverLetterRepository,
         {
           provide: ConfigService,
           useValue: {
@@ -31,10 +31,12 @@ describe('CoverLetterService', () => {
       ],
     }).compile();
 
-    service = module.get<CoverLetterService>(CoverLetterService);
+    repository = module.get<CoverLetterRepository>(CoverLetterRepository);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(repository).toBeDefined();
   });
+
+  // Add more tests for save and findByUserId methods
 });

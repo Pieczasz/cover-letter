@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
+import { FileValidator } from './validators/file.validator';
 
 @Module({
-  imports: [ConfigModule],
   controllers: [UploadController],
-  providers: [UploadService],
+  providers: [UploadService, FileValidator],
 })
 export class UploadModule {}

@@ -11,6 +11,8 @@ import { ClerkClientProvider } from './auth/clerk-client.provider';
 import { ClerkAuthGuard } from './auth/clerk-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { DynamoDBService } from './database/dynamodb.service';
+import { UsersController } from './user/users.controller';
 
 @Module({
   imports: [
@@ -24,14 +26,16 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     AiModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController],
   providers: [
     AppService,
     ClerkClientProvider,
+    DynamoDBService,
     {
       provide: APP_GUARD,
       useClass: ClerkAuthGuard,
     },
   ],
+  exports: [DynamoDBService],
 })
 export class AppModule {}
