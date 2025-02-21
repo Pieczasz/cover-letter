@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { FileValidator } from './validators/file.validator';
+import { CoverLetterService } from '../cover-letter/cover-letter.service';
 
 @Injectable()
 export class UploadService {
@@ -10,6 +11,7 @@ export class UploadService {
   constructor(
     private configService: ConfigService,
     private fileValidator: FileValidator,
+    private coverLetterService: CoverLetterService,
   ) {
     this.s3Client = new S3Client({
       region: this.configService.get<string>('AWS_REGION'),
@@ -22,11 +24,11 @@ export class UploadService {
     });
   }
 
-  async uploadFile(file: Express.Multer.File) {
+  async uploadFile(file: Express.Multer.File, userId: string) {
     this.fileValidator.validateFile(file);
 
     const bucketName = this.configService.get<string>('AWS_BUCKET_NAME');
-    const key = `cvs/${Date.now()}-${file.originalname}`;
+    const key = `users/${userId}/cvs/${Date.now()}-${file.originalname}`;
 
     try {
       await this.s3Client.send(
@@ -38,13 +40,19 @@ export class UploadService {
         }),
       );
 
+      await this.coverLetterService.saveCoverLetter(
+        userId,
+        Date.now().toString(),
+        key,
+      );
+
       return {
         key,
         url: `https://${bucketName}.s3.amazonaws.com/${key}`,
       };
     } catch (error) {
-      console.error('S3 upload error:', error);
-      throw new Error('Error uploading file to S3');
+      console.error('Upload error:', error);
+      throw new Error('Error uploading file');
     }
   }
 }

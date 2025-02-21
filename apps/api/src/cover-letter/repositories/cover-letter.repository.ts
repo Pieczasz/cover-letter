@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
-  DynamoDBClient,
-  PutItemCommand,
+  DynamoDBDocumentClient,
+  PutCommand,
   QueryCommand,
-} from '@aws-sdk/client-dynamodb';
+} from '@aws-sdk/lib-dynamodb';
 
 @Injectable()
 export class CoverLetterRepository {
-  private client: DynamoDBClient;
+  private client: DynamoDBDocumentClient;
   private tableName: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.client = new DynamoDBClient({
+    const dbClient = new DynamoDBClient({
       region: this.configService.get<string>('AWS_REGION'),
       credentials: {
         accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID'),
@@ -21,23 +22,25 @@ export class CoverLetterRepository {
         ),
       },
     });
+
+    this.client = DynamoDBDocumentClient.from(dbClient);
     this.tableName = this.configService.get<string>(
       'DYNAMODB_TABLE_COVER_LETTERS',
     );
   }
 
-  async save(userId: string, coverId: string, data: any): Promise<void> {
+  async save(userId: string, coverLetterId: string, data: any): Promise<void> {
     const params = {
       TableName: this.tableName,
       Item: {
-        userId: { S: userId },
-        coverId: { S: coverId },
-        data: { S: JSON.stringify(data) },
-        createdAt: { S: new Date().toISOString() },
+        userId,
+        coverLetterId,
+        data: JSON.stringify(data),
+        createdAt: new Date().toISOString(),
       },
     };
 
-    await this.client.send(new PutItemCommand(params));
+    await this.client.send(new PutCommand(params));
   }
 
   async findByUserId(userId: string): Promise<any[]> {
@@ -45,16 +48,16 @@ export class CoverLetterRepository {
       TableName: this.tableName,
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
-        ':userId': { S: userId },
+        ':userId': userId,
       },
     };
 
     const result = await this.client.send(new QueryCommand(params));
     return (
       result.Items?.map((item) => ({
-        coverId: item.coverId.S,
-        data: JSON.parse(item.data.S),
-        createdAt: item.createdAt.S,
+        coverLetterId: item.coverLetterId,
+        data: JSON.parse(item.data),
+        createdAt: item.createdAt,
       })) || []
     );
   }

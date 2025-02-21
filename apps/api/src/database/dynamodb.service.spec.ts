@@ -2,7 +2,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { DynamoDBService } from './dynamodb.service';
-import { CreateTableCommandOutput } from '@aws-sdk/client-dynamodb';
 
 describe('DynamoDBService', () => {
   let service: DynamoDBService;
