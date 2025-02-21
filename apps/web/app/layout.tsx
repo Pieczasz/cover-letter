@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Navbar } from '../components/layout/Navbar';
+import { AuthCallback } from '../components/AuthCallback';
 
 import './globals.css';
 

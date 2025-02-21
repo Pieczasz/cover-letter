@@ -12,7 +12,7 @@ import { ClerkAuthGuard } from './auth/clerk-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { DynamoDBService } from './database/dynamodb.service';
-import { UserController } from './user.controller';
+import { UsersController } from './users.controller';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { UserController } from './user.controller';
     AuthModule,
     AiModule,
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, UsersController],
   providers: [
     AppService,
     ClerkClientProvider,
