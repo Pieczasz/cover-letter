@@ -49,7 +49,7 @@ describe('UploadService', () => {
         size: 1024 * 1024, // 1MB
       } as Express.Multer.File;
 
-      const result = await service.uploadFile(mockFile);
+      const result = await service.uploadFile(mockFile, 'test-user-id');
 
       expect(result).toHaveProperty('key');
       expect(result).toHaveProperty('url');
@@ -63,9 +63,9 @@ describe('UploadService', () => {
         size: 1024 * 1024,
       } as Express.Multer.File;
 
-      await expect(service.uploadFile(mockFile)).rejects.toThrow(
-        'Invalid file type',
-      );
+      await expect(
+        service.uploadFile(mockFile, 'test-user-id'),
+      ).rejects.toThrow('Invalid file type');
     });
 
     it('should throw error for file too large', async () => {
@@ -76,9 +76,9 @@ describe('UploadService', () => {
         size: 3 * 1024 * 1024, // 3MB
       } as Express.Multer.File;
 
-      await expect(service.uploadFile(mockFile)).rejects.toThrow(
-        'File size too large',
-      );
+      await expect(
+        service.uploadFile(mockFile, 'test-user-id'),
+      ).rejects.toThrow('File size too large');
     });
   });
 });

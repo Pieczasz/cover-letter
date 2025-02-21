@@ -3,8 +3,8 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
-  ParseFilePipeBuilder,
-  HttpStatus,
+  Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
@@ -16,20 +16,13 @@ export class UploadController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /(pdf|doc|docx)$/,
-        })
-        .addMaxSizeValidator({
-          maxSize: 2000000, // 2MB
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
   ) {
-    return this.uploadService.uploadFile(file);
+    const userId = req.auth?.userId;
+    if (!userId) {
+      throw new UnauthorizedException('User ID is required');
+    }
+    return this.uploadService.uploadFile(file, userId);
   }
 }

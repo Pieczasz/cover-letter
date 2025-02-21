@@ -5,6 +5,7 @@ import { UploadCloud, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useUploadStore } from '../../lib/store/uploadStore';
 import { uploadCV } from '../../lib/api-client';
+import { useAuth } from '@clerk/nextjs';
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = {
@@ -29,6 +30,8 @@ export const FileUpload = () => {
     success,
   } = useUploadStore();
 
+  const { getToken } = useAuth();
+
   const validateFile = (file: File) => {
     if (!Object.keys(ALLOWED_TYPES).includes(file.type)) {
       throw new Error('Please upload a PDF or Word document');
@@ -38,26 +41,34 @@ export const FileUpload = () => {
     }
   };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-    try {
-      validateFile(file);
-      setFile(file);
-      setError(null);
-      setSuccess(false);
-      setIsUploading(true);
-      setProgress(0);
+      try {
+        validateFile(file);
+        setFile(file);
+        setError(null);
+        setSuccess(false);
+        setIsUploading(true);
+        setProgress(0);
 
-      await uploadCV(file, (progress) => setProgress(progress));
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      setIsUploading(false);
-    }
-  }, []);
+        const token = await getToken();
+        if (!token) {
+          throw new Error('Authentication token is missing');
+        }
+        await uploadCV(file, token, (progress) => setProgress(progress));
+
+        setSuccess(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Upload failed');
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [getToken /*, ...other dependencies if needed*/],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
