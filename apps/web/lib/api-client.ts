@@ -27,17 +27,12 @@ export async function uploadCV(
           'response:',
           xhr.responseText,
         );
-        reject(new Error('Upload failed'));
+        reject(new Error(xhr.responseText || 'Upload failed'));
       }
     });
 
-    xhr.addEventListener('error', () => {
-      console.error('XHR error:', xhr.status, xhr.responseText);
-      reject(new Error('Upload failed'));
-    });
     xhr.open('POST', `${baseUrl}/upload`);
-
-    // Use the provided token.
+    // Add Bearer prefix to the token
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.send(formData);
   });

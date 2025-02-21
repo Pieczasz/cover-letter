@@ -30,7 +30,7 @@ export const FileUpload = () => {
     success,
   } = useUploadStore();
 
-  const { getToken } = useAuth();
+  const { getToken, isSignedIn } = useAuth();
 
   const validateFile = (file: File) => {
     if (!Object.keys(ALLOWED_TYPES).includes(file.type)) {
@@ -54,12 +54,16 @@ export const FileUpload = () => {
         setIsUploading(true);
         setProgress(0);
 
+        if (!isSignedIn) {
+          throw new Error('Please sign in to upload files');
+        }
+
         const token = await getToken();
         if (!token) {
           throw new Error('Authentication token is missing');
         }
-        await uploadCV(file, token, (progress) => setProgress(progress));
 
+        await uploadCV(file, token, (progress) => setProgress(progress));
         setSuccess(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed');
@@ -67,7 +71,7 @@ export const FileUpload = () => {
         setIsUploading(false);
       }
     },
-    [getToken /*, ...other dependencies if needed*/],
+    [getToken, isSignedIn],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
